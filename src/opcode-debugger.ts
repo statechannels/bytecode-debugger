@@ -5,15 +5,14 @@ import { Opcode, OpcodeList } from "@ethereumjs/vm/dist/evm/opcodes";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
-import { AsyncLineReader } from "async-line-reader";
 import Table from "cli-table";
 import chalk from "chalk";
 import _ from "lodash";
 import { StorageDump } from "@ethereumjs/vm/dist/state/interface";
 import { ExecutionManager, ExecutionInfo } from "./execution-manager";
 import { toPrettyHex } from "./utils";
-import enquirer from "enquirer";
-import promptly from "promptly";
+import { prompt } from "enquirer";
+
 debugOpcode();
 
 async function debugOpcode() {
@@ -50,16 +49,17 @@ async function runCode(code: Buffer, callData: Buffer, callValue: BN) {
       callData,
       callValue,
       historyManager.opCodeList,
-      25
+      10
     );
 
-    enquirer.prompt({ type: "autoCompelete", name:'test', message:'Forwards or Backwards',    });
-    const stepDirection = await promptly.choose("Forwards or Backwards?", [
-      "F",
-      "B",
-    ]);
+    const response = (await prompt({
+      type: "autocomplete",
+      name: "direction",
+      choices: ["Forward", "Backward"],
+      message: "What direction",
+    })) as { direction: "Forward" | "Backward" };
 
-    if (stepDirection === "FORWARD") {
+    if (response.direction === "Backward") {
       execInfo = await historyManager.stepBackwards();
     } else {
       execInfo = await historyManager.stepForwards();
