@@ -2,6 +2,10 @@
   "name": "opcode-debugger",
   "version": "0.0.0",
   "main": "scripts/opcode-debugger.ts",
+  "bin": {
+    "opd":"./scripts/opcode-debugger.ts",
+    "opcode-debug": "./scripts/opcode-debugger.ts" 
+ },
   "license": "MIT",
   "dependencies": {
     "@ethereumjs/block": "^3.4.0",
