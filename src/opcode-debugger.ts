@@ -180,7 +180,7 @@ async function generateInstructionTable(
     const currentColor =
       printCounter === currentCounter ? chalk.bgBlue : chalk.white;
     const valueColor =
-      printCounter === currentCounter ? chalk.bgCyan : chalk.white;
+      printCounter === currentCounter ? chalk.bgMagenta : chalk.white;
     const opcodeInfo = getOpcodeInfo(code[printCounter], opCodeList);
     opCodeExecTable.push([
       currentColor(toPrettyHex(printCounter)),
@@ -237,7 +237,7 @@ function generateBytecodeOutput(
       while (numToPush !== 0) {
         numToPush--;
         printCounter++;
-        byteCodeOutput += chalk.bgCyan(code[printCounter].toString(16));
+        byteCodeOutput += chalk.bgMagenta(code[printCounter].toString(16));
       }
     } else {
       byteCodeOutput += code[printCounter].toString(16);
