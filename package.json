@@ -1,10 +1,9 @@
 {
-  "name": "opcode-debugger",
+  "name": "bytecode-debugger",
   "version": "0.0.0",
-  "main": "scripts/opcode-debugger.ts",
+  "main": "scripts/bytecode-debugger.ts",
   "bin": {
-    "opd":"./scripts/opcode-debugger.ts",
-    "opcode-debug": "./scripts/opcode-debugger.ts" 
+    "bcdebug": "./scripts/bytecode-debugger.ts" 
  },
   "license": "MIT",
   "dependencies": {
