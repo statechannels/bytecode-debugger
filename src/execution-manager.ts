@@ -22,7 +22,7 @@ import { evmSetup } from "./utils";
 
 export type ExecutionInfo = {
   initialPC: number;
-
+  gasUsed: number;
   memory: Memory;
   storageDump: StorageDump;
   stack: Stack;
@@ -33,14 +33,15 @@ export class ExecutionManager {
   currentIndex = 0;
   history: ExecutionInfo[] = [];
   runState: RunState;
-
   common: Common;
   opCodeList: OpcodeList;
+  initialGas: number;
 
   constructor(code: Buffer, callData: Buffer, callValue: BN) {
     const { runState, common } = evmSetup(callData, callValue, code);
 
     this.runState = runState;
+    this.initialGas = this.runState.eei.getGasLeft().toNumber();
     this.opCodeList = getOpcodesForHF(common);
     this.common = common;
 
@@ -57,6 +58,7 @@ export class ExecutionManager {
       initialPC: 0,
       memory: new Memory(),
       storageDump: {},
+      gasUsed: 0,
     });
   }
 
@@ -107,6 +109,7 @@ export class ExecutionManager {
       memory,
       storageDump: await stateManager.dumpStorage(Address.zero()),
       initialPC: this.runState.programCounter,
+      gasUsed: this.initialGas - this.runState.eei.getGasLeft().toNumber(),
     };
   }
 

@@ -15,6 +15,7 @@ import { BN, Address } from "ethereumjs-util";
 import level from "level";
 import { SecureTrie as Trie } from "merkle-patricia-tree";
 import { utils } from "ethers";
+
 export const LINE_HEIGHT = 15;
 export const START_GAS = 15000000;
 
@@ -99,7 +100,6 @@ export function evmSetup(
   const runState: RunState = {
     programCounter: 0,
     opCode: code[0],
-
     memory: new Memory(),
     memoryWordCount: new BN(0),
     highestMemCost: new BN(0),

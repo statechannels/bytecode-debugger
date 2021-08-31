@@ -13,7 +13,6 @@ import { ExecutionManager, ExecutionInfo } from "./execution-manager";
 import { toPrettyHex, toPrettyByte } from "./utils";
 import { prompt } from "enquirer";
 import fs from "fs";
-import { utils } from "ethers";
 
 debugOpcode();
 
@@ -25,7 +24,6 @@ async function debugOpcode() {
       demandOption: true,
       type: "string",
     })
-
     .option("c", { alias: "calldata", type: "string", default: "0" })
     .option("v", { alias: "callvalue", type: "string", default: "0" }).argv;
 
@@ -62,12 +60,14 @@ async function runCode(code: Buffer, callData: Buffer, callValue: BN) {
       choices.push("Step Backwards");
     }
     choices.push("Quit");
+
     const response = (await prompt({
       type: "autocomplete",
       name: "action",
       choices,
       message: "What do you want to do?",
     })) as { action: "Step Forwards" | "Step Backwards" | "Quit" };
+
     switch (response.action) {
       case "Step Forwards":
         execInfo = await executionManager.stepForwards();
@@ -113,6 +113,7 @@ async function outputExecInfo(
   console.log(`0x${callValue.toString("hex")}`);
 
   console.log(bytecodeOutput);
+  console.log(`${chalk.bold("Total Gas Used:")} ${execInfo.gasUsed}`);
   console.log(masterTable.toString());
 }
 
