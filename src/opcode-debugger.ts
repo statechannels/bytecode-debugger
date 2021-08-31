@@ -12,6 +12,7 @@ import { StorageDump } from "@ethereumjs/vm/dist/state/interface";
 import { ExecutionManager, ExecutionInfo } from "./execution-manager";
 import { toPrettyHex } from "./utils";
 import { prompt } from "enquirer";
+import fs from "fs";
 
 debugOpcode();
 
@@ -19,15 +20,20 @@ async function debugOpcode() {
   // TODO: Point these to files
   const commandArguments = await yargs(hideBin(process.argv))
     .option("b", {
-      alias: "bytecode",
+      alias: "bytecodeFile",
       demandOption: true,
       type: "string",
     })
 
-    .option("c", { alias: "calldata", type: "string", default: "a2e62045" })
+    .option("c", { alias: "calldata", type: "string", default: "0" })
     .option("v", { alias: "callvalue", type: "string", default: "0" }).argv;
+
+  const code = Buffer.from(
+    await fs.promises.readFile(commandArguments.b, "utf8"),
+    "hex"
+  );
   await runCode(
-    Buffer.from(commandArguments.b, "hex"),
+    code,
     Buffer.from(commandArguments.c, "hex"),
     new BN(commandArguments.v, "hex")
   );
