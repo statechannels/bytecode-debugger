@@ -16,9 +16,6 @@ import level from "level";
 import { SecureTrie as Trie } from "merkle-patricia-tree";
 import { utils } from "ethers";
 
-export const LINE_HEIGHT = 15;
-export const START_GAS = 15000000;
-
 export function getValidJumpDests(
   code: Buffer,
   opCodes: OpcodeList
@@ -85,12 +82,14 @@ export function evmSetup(
     contract: undefined!, // TODO Sort this out
     codeAddress: Address.zero(),
   };
+  // TODO: Just grabbed this from a quick google, this should probably be a param with a sane default
+  const START_GAS = 15000000;
   const eei = new EEI(
     env,
     stateManager,
     { _vm: { DEBUG: true } } as EVM, // TODO: Hacky AF
     common,
-    new BN(START_GAS) // TODO: Just grabbed this from a quick google, this should probably be a param with a sane default
+    new BN(START_GAS)
   );
 
   const opCodeList = getOpcodesForHF(common);
