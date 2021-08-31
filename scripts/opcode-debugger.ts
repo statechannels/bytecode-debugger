@@ -19,12 +19,25 @@ debugBytecode();
 async function debugBytecode() {
   const commandArguments = await yargs(hideBin(process.argv))
     .option("b", {
+      description: `A path to a file containing the bytecode to debug.
+    This is should be the ${chalk.bold("runtime")} bytecode.
+    This can be created by passing the '--bin-runtime' flag into solc.`,
       alias: "bytecodeFile",
       demandOption: true,
       type: "string",
     })
-    .option("c", { alias: "calldata", type: "string", default: "0" })
-    .option("v", { alias: "callvalue", type: "string", default: "0" }).argv;
+    .option("c", {
+      alias: "calldata",
+      description: `The call data to use for debugging`,
+      type: "string",
+      default: "0",
+    })
+    .option("v", {
+      alias: "callvalue",
+      type: "string",
+      description: `The call value to use for debugging`,
+      default: "0",
+    }).argv;
 
   const code = Buffer.from(
     await fs.promises.readFile(commandArguments.b, "utf8"),
@@ -32,10 +45,12 @@ async function debugBytecode() {
   );
   await runCode(
     code,
+
     Buffer.from(commandArguments.c, "hex"),
     new BN(commandArguments.v, "hex")
   );
 }
+
 async function runCode(code: Buffer, callData: Buffer, callValue: BN) {
   const executionManager = new ExecutionManager(code, callData, callValue);
   let execInfo = executionManager.currentStep;
