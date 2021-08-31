@@ -7,4 +7,4 @@ solc  sample.sol --bin-runtime --abi -o .
 npx bcdebug -b ./Sample.bin-runtime -a ./Sample.abi
 ```
 
-![Simple demo](images/demo.gif)
+![Simple demo](https://github.com/statechannels/bytecode-debugger/blob/main/images/demo.gif?raw=true)
