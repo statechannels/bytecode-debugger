@@ -34,8 +34,8 @@ async function debugOpcode() {
 }
 
 async function runCode(code: Buffer, callData: Buffer, callValue: BN) {
-  const historyManager = new ExecutionManager(code, callData, callValue);
-  let execInfo = historyManager.currentStep;
+  const executionManager = new ExecutionManager(code, callData, callValue);
+  let execInfo = executionManager.currentStep;
 
   while (true) {
     await outputExecInfo(
@@ -43,7 +43,7 @@ async function runCode(code: Buffer, callData: Buffer, callValue: BN) {
       code,
       callData,
       callValue,
-      historyManager.opCodeList,
+      executionManager.opCodeList,
       10
     );
 
@@ -63,10 +63,10 @@ async function runCode(code: Buffer, callData: Buffer, callValue: BN) {
     })) as { action: "Step Forwards" | "Step Backwards" | "Quit" };
     switch (response.action) {
       case "Step Forwards":
-        execInfo = await historyManager.stepForwards();
+        execInfo = await executionManager.stepForwards();
         break;
       case "Step Backwards":
-        execInfo = await historyManager.stepBackwards();
+        execInfo = await executionManager.stepBackwards();
         break;
       case "Quit":
         process.exit(0);
