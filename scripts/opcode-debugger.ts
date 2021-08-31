@@ -9,15 +9,14 @@ import Table from "cli-table";
 import chalk, { Chalk } from "chalk";
 import _ from "lodash";
 import { StorageDump } from "@ethereumjs/vm/dist/state/interface";
-import { ExecutionManager, ExecutionInfo } from "./execution-manager";
-import { toPrettyHex, toPrettyByte, incrementCounter } from "./utils";
+import { ExecutionManager, ExecutionInfo } from "../src/execution-manager";
+import { toPrettyHex, toPrettyByte, incrementCounter } from "../src/utils";
 import { prompt } from "enquirer";
 import fs from "fs";
 
-debugOpcode();
+debugBytecode();
 
-async function debugOpcode() {
-  // TODO: Point these to files
+async function debugBytecode() {
   const commandArguments = await yargs(hideBin(process.argv))
     .option("b", {
       alias: "bytecodeFile",
@@ -37,7 +36,6 @@ async function debugOpcode() {
     new BN(commandArguments.v, "hex")
   );
 }
-
 async function runCode(code: Buffer, callData: Buffer, callValue: BN) {
   const executionManager = new ExecutionManager(code, callData, callValue);
   let execInfo = executionManager.currentStep;
@@ -275,4 +273,3 @@ function getOpcodeInfo(code: number, opCodeList: OpcodeList): Opcode {
   }
   return opcodeInfo;
 }
-

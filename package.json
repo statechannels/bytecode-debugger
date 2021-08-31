@@ -1,7 +1,7 @@
 {
   "name": "opcode-debugger",
   "version": "0.0.0",
-  "main": "index.ts",
+  "main": "scripts/opcode-debugger.ts",
   "license": "MIT",
   "dependencies": {
     "@ethereumjs/block": "^3.4.0",
