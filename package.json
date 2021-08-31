@@ -1,10 +1,10 @@
 {
   "name": "bytecode-debugger",
-  "version": "0.0.0",
+  "version": "0.1.1",
   "main": "scripts/bytecode-debugger.ts",
   "bin": {
-    "bcdebug": "./scripts/bytecode-debugger.ts" 
- },
+    "bcdebug": "./scripts/bytecode-debugger.ts"
+  },
   "license": "MIT",
   "dependencies": {
     "@ethereumjs/block": "^3.4.0",
