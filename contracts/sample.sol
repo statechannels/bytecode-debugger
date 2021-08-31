@@ -3,9 +3,9 @@
 pragma solidity ^0.8.7;
 
 contract SimpleSample {
-    uint256 public aNumber;
+    uint256 public total;
 
-    function add(uint256 amount) public payable {
-        aNumber = aNumber + amount;
+    function addOne() public payable {
+        total = total + 1;
     }
 }
