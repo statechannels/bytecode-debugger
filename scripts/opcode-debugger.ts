@@ -191,15 +191,16 @@ async function generateInstructionTable(
 
   let printCounter = currentCounter;
 
-  for (let i = 0; i < numberOfLines; i++) {
+  for (let i = 0; i < numberOfLines && printCounter < code.length; i++) {
+    const opCodeInfo = opCodeList.get(code[printCounter]);
     const currentColor =
       printCounter === currentCounter ? chalk.bgBlue : chalk.white;
     const valueColor =
       printCounter === currentCounter ? chalk.bgMagenta : chalk.white;
-    const opcodeInfo = getOpcodeInfo(code[printCounter], opCodeList);
+
     opCodeExecTable.push([
       currentColor(toPrettyHex(printCounter)),
-      toPrettyHex(opcodeInfo.code),
+      toPrettyHex(code[printCounter]),
       getInstructionName(
         opCodeList,
         printCounter,
@@ -207,7 +208,7 @@ async function generateInstructionTable(
         valueColor,
         code
       ),
-      currentColor(toPrettyHex(opcodeInfo.fee)),
+      opCodeInfo ? currentColor(toPrettyHex(opCodeInfo.fee)) : "",
     ]);
 
     printCounter = incrementCounter(printCounter, code, opCodeList);
@@ -222,7 +223,12 @@ function getInstructionName(
   valueColor: Chalk,
   code: Buffer
 ): string {
-  const opCodeInfo = getOpcodeInfo(code[currentCounter], opCodeList);
+  const opCodeInfo = opCodeList.get(code[currentCounter]);
+  // It looks like bin-runtime output can contain invalid opcodes as long as they're not executed
+  if (!opCodeInfo) {
+    return toPrettyHex(code[currentCounter]);
+  }
+
   let instruction = `${instructionColor(opCodeInfo.fullName)}`;
   if (opCodeInfo.name === "PUSH") {
     const values = code.slice(
