@@ -6,7 +6,7 @@ import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
 import Table from "cli-table";
-import chalk from "chalk";
+import chalk, { Chalk } from "chalk";
 import _ from "lodash";
 import { StorageDump } from "@ethereumjs/vm/dist/state/interface";
 import { ExecutionManager, ExecutionInfo } from "./execution-manager";
@@ -177,12 +177,21 @@ async function generateInstructionTable(
   let printCounter = currentCounter;
 
   for (let i = 0; i < numberOfLines; i++) {
-    const color = printCounter === currentCounter ? chalk.bgBlue : chalk.white;
+    const currentColor =
+      printCounter === currentCounter ? chalk.bgBlue : chalk.white;
+    const valueColor =
+      printCounter === currentCounter ? chalk.bgCyan : chalk.white;
     const opcodeInfo = getOpcodeInfo(code[printCounter], opCodeList);
     opCodeExecTable.push([
-      color(toPrettyHex(printCounter)),
-      color(opcodeInfo.fullName),
-      color(toPrettyHex(opcodeInfo.fee)),
+      currentColor(toPrettyHex(printCounter)),
+      getInstructionName(
+        opCodeList,
+        printCounter,
+        currentColor,
+        valueColor,
+        code
+      ),
+      currentColor(toPrettyHex(opcodeInfo.fee)),
     ]);
 
     printCounter = incrementCounter(printCounter, code, opCodeList);
@@ -190,6 +199,24 @@ async function generateInstructionTable(
   return opCodeExecTable.toString();
 }
 
+function getInstructionName(
+  opCodeList: OpcodeList,
+  currentCounter: number,
+  instructionColor: Chalk,
+  valueColor: Chalk,
+  code: Buffer
+): string {
+  const opCodeInfo = getOpcodeInfo(code[currentCounter], opCodeList);
+  let instruction = `${instructionColor(opCodeInfo.fullName)}`;
+  if (opCodeInfo.name === "PUSH") {
+    const values = code.slice(
+      currentCounter + 1,
+      incrementCounter(currentCounter, code, opCodeList)
+    );
+    instruction += ` ${valueColor("0x" + values.toString("hex"))}`;
+  }
+  return instruction;
+}
 function generateBytecodeOutput(
   code: Buffer,
   currentCounter: number,
