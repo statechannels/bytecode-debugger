@@ -3,7 +3,8 @@
   "version": "0.1.3",
   "main": "scripts/bytecode-debugger.ts",
   "bin": {
-    "bcdebug": "./scripts/bytecode-debugger.ts"
+    "bcdebug": "./scripts/bytecode-debugger.ts",
+    "bytecode-debugger": "./scripts/bytecode-debugger.ts"
   },
   "license": "MIT",
   "dependencies": {
