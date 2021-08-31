@@ -1,8 +1,10 @@
 # Quick Start
 
+A sample contract can be found [here](https://github.com/statechannels/bytecode-debugger/blob/main/contracts/sample.sol)
+
 ```shell
-solc  ./contracts/sample.sol -o ./build  --overwrite --bin-runtime --abi
-npx ts-node ./scripts/bytecode-debugger.ts -b ./build/SimpleSample.bin-runtime -a ./build/SimpleSample.abi
+solc  sample.sol --bin-runtime --abi -o .
+npx bcdebug -b ./Sample.bin-runtime -a ./Sample.abi
 ```
 
 ![Simple demo](images/demo.gif)
