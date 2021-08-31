@@ -14,7 +14,7 @@ import { DefaultStateManager } from "@ethereumjs/vm/dist/state";
 import { BN, Address } from "ethereumjs-util";
 import level from "level";
 import { SecureTrie as Trie } from "merkle-patricia-tree";
-
+import { utils } from "ethers";
 export const LINE_HEIGHT = 15;
 export const START_GAS = 15000000;
 
@@ -43,6 +43,9 @@ export function getValidJumpDests(
   return { validJumps: validJumps, validJumpSubs: validJumpSubs };
 }
 
+export function toPrettyByte(thing: number): string {
+  return utils.hexZeroPad(toPrettyHex(thing), 1).slice(2);
+}
 export function toPrettyHex(thing: number): string {
   return `0x${thing.toString(16)}`;
 }

@@ -10,9 +10,10 @@ import chalk, { Chalk } from "chalk";
 import _ from "lodash";
 import { StorageDump } from "@ethereumjs/vm/dist/state/interface";
 import { ExecutionManager, ExecutionInfo } from "./execution-manager";
-import { toPrettyHex } from "./utils";
+import { toPrettyHex, toPrettyByte } from "./utils";
 import { prompt } from "enquirer";
 import fs from "fs";
+import { utils } from "ethers";
 
 debugOpcode();
 
@@ -232,15 +233,15 @@ function generateBytecodeOutput(
       const opCode = opCodeList.get(code[printCounter])!;
       let numToPush = opCode.name === "PUSH" ? opCode.code - 0x5f : 0;
 
-      byteCodeOutput += chalk.bgBlue(code[printCounter].toString(16));
+      byteCodeOutput += chalk.bgBlue(toPrettyByte(code[printCounter]));
 
       while (numToPush !== 0) {
         numToPush--;
         printCounter++;
-        byteCodeOutput += chalk.bgMagenta(code[printCounter].toString(16));
+        byteCodeOutput += chalk.bgMagenta(toPrettyByte(code[printCounter]));
       }
     } else {
-      byteCodeOutput += code[printCounter].toString(16);
+      byteCodeOutput += toPrettyByte(code[printCounter]);
     }
     printCounter++;
   }
