@@ -29,13 +29,14 @@ export type ExecutionInfo = {
 };
 
 export class ExecutionManager {
-  latestExecuted = 0;
-  currentIndex = 0;
-  history: ExecutionInfo[] = [];
-  runState: RunState;
-  common: Common;
-  opCodeList: OpcodeList;
-  initialGas: number;
+  private latestExecuted = 0;
+  private currentIndex = 0;
+  private history: ExecutionInfo[] = [];
+  private runState: RunState;
+  private common: Common;
+  private initialGas: number;
+
+  public opCodeList: OpcodeList;
 
   constructor(code: Buffer, callData: Buffer, callValue: BN) {
     const { runState, common } = evmSetup(callData, callValue, code);
@@ -53,6 +54,7 @@ export class ExecutionManager {
       Buffer.from(_.repeat("deadbeaf", 8), "hex")
     );
 
+    // This is the initial state for the PC: 0
     this.history.push({
       stack: new Stack(),
       initialPC: 0,
@@ -65,7 +67,8 @@ export class ExecutionManager {
   get currentStep(): ExecutionInfo {
     return this.history[this.currentIndex];
   }
-  async executeStep(): Promise<ExecutionInfo> {
+
+  private async executeStep(): Promise<ExecutionInfo> {
     const opCode = this.runState.code[this.runState.programCounter];
     this.runState.opCode = opCode;
 
@@ -119,6 +122,7 @@ export class ExecutionManager {
     }
     return this.history[this.currentIndex];
   }
+
   async stepForwards(): Promise<ExecutionInfo> {
     this.currentIndex++;
     if (this.currentIndex < this.history.length) {

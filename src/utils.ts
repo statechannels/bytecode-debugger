@@ -38,12 +38,13 @@ export function getValidJumpDests(
     }
   }
 
-  return { validJumps: validJumps, validJumpSubs: validJumpSubs };
+  return { validJumps, validJumpSubs };
 }
 
 export function toPrettyByte(thing: number): string {
   return utils.hexZeroPad(toPrettyHex(thing), 1).slice(2);
 }
+
 export function toPrettyHex(thing: number): string {
   return `0x${thing.toString(16)}`;
 }
@@ -112,4 +113,22 @@ export function evmSetup(
   };
 
   return { opCodeList, runState, common };
+}
+
+export function incrementCounter(
+  currentCounter: number,
+  code: Buffer,
+  opCodeList: OpcodeList
+) {
+  const currentOpCode = code[currentCounter];
+  const opcodeInfo = getOpcodeInfo(currentOpCode, opCodeList);
+  let increment = 1;
+
+  // If it is a PUSH instruction we want to skip over the data bytes
+  if (opcodeInfo.name === "PUSH") {
+    const numToPush = currentOpCode - 0x5f;
+
+    increment = increment + numToPush;
+  }
+  return currentCounter + increment;
 }

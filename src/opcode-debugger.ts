@@ -10,7 +10,7 @@ import chalk, { Chalk } from "chalk";
 import _ from "lodash";
 import { StorageDump } from "@ethereumjs/vm/dist/state/interface";
 import { ExecutionManager, ExecutionInfo } from "./execution-manager";
-import { toPrettyHex, toPrettyByte } from "./utils";
+import { toPrettyHex, toPrettyByte, incrementCounter } from "./utils";
 import { prompt } from "enquirer";
 import fs from "fs";
 
@@ -276,35 +276,3 @@ function getOpcodeInfo(code: number, opCodeList: OpcodeList): Opcode {
   return opcodeInfo;
 }
 
-function incrementCounter(
-  currentCounter: number,
-  code: Buffer,
-  opCodeList: OpcodeList
-) {
-  const currentOpCode = code[currentCounter];
-  const opcodeInfo = getOpcodeInfo(currentOpCode, opCodeList);
-  let increment = 1;
-
-  // If it is a PUSH instruction we want to skip over the data bytes
-  if (opcodeInfo.name === "PUSH") {
-    const numToPush = currentOpCode - 0x5f;
-
-    increment = increment + numToPush;
-  }
-  return currentCounter + increment;
-}
-
-function decrementCounter(
-  currentCounter: number,
-  code: Buffer,
-  opCodeList: OpcodeList
-) {
-  let counter = 0;
-  let validCounter = 0;
-  while (counter < currentCounter) {
-    validCounter = counter;
-    counter = incrementCounter(counter, code, opCodeList);
-  }
-
-  return validCounter;
-}
