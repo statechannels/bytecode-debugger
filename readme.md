@@ -6,7 +6,7 @@ curl https://rawcdn.githack.com/statechannels/bytecode-debugger/836be299d2a9977f
 # Build the bytecode and abi from the contract
 solc  sample.sol --bin-runtime --abi -o .
 # Debug the bytecode
-npx bcdebug -b ./Sample.bin-runtime -a ./Sample.abi
+npx bytecode-debugger -b ./Sample.bin-runtime -a ./Sample.abi
 ```
 
 ![Simple demo](https://github.com/statechannels/bytecode-debugger/blob/main/images/demo.gif?raw=true)
