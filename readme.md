@@ -1,9 +1,11 @@
 # Quick Start
 
-A sample contract can be found [here](https://github.com/statechannels/bytecode-debugger/blob/main/contracts/sample.sol)
-
 ```shell
+# Download the sample contract from github
+curl https://rawcdn.githack.com/statechannels/bytecode-debugger/836be299d2a9977fd78ca132dbb73a24090007cd/contracts/sample.sol -o ./sample.sol
+# Build the bytecode and abi from the contract
 solc  sample.sol --bin-runtime --abi -o .
+# Debug the bytecode
 npx bcdebug -b ./Sample.bin-runtime -a ./Sample.abi
 ```
 
