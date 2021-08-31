@@ -21,9 +21,7 @@
     "levelup": "^5.0.1",
     "lodash": "^4.17.21",
     "ts-node": "^10.2.1",
-    "yargs": "^17.1.1"
-  },
-  "devDependencies": {
+    "yargs": "^17.1.1",
     "@types/chalk": "^2.2.0",
     "@types/cli-table": "^0.3.0",
     "@types/clui": "^0.3.1",
