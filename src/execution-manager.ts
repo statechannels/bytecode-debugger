@@ -98,7 +98,8 @@ export class ExecutionManager {
     } catch (error) {
       // If we reach the STOP instruction the evm throws an STOP error
       // This just means the execution is done
-      if (error.error === "stop") {
+      // TODO: Not casting this causes an error. Probably some type mismatch.
+      if ((error as any).error === "stop") {
         console.log("Execution Complete");
         process.exit(0);
       } else {
