@@ -168,8 +168,8 @@ async function generateInstructionTable(
   opCodeList: OpcodeList
 ): Promise<string> {
   const opCodeExecTable = new Table({
-    head: ["PC", "INSTRUCTION", "GAS COST"],
-    colWidths: [10, 30, 10],
+    head: ["PC", "OP CODE", "INSTRUCTION", "GAS COST"],
+    colWidths: [10, 10, 20, 10],
   });
 
   const numberOfLines = Math.min(height, code.length - currentCounter);
@@ -184,6 +184,7 @@ async function generateInstructionTable(
     const opcodeInfo = getOpcodeInfo(code[printCounter], opCodeList);
     opCodeExecTable.push([
       currentColor(toPrettyHex(printCounter)),
+      toPrettyHex(opcodeInfo.code),
       getInstructionName(
         opCodeList,
         printCounter,
