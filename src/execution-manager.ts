@@ -51,8 +51,18 @@ export class ExecutionManager {
       Buffer.from(_.repeat("deadbeaf", 8), "hex"),
       Buffer.from(_.repeat("deadbeaf", 8), "hex")
     );
+
+    this.history.push({
+      stack: new Stack(),
+      initialPC: 0,
+      memory: new Memory(),
+      storageDump: {},
+    });
   }
 
+  get currentStep(): ExecutionInfo {
+    return this.history[this.currentIndex];
+  }
   async executeStep(): Promise<ExecutionInfo> {
     const opCode = this.runState.code[this.runState.programCounter];
     this.runState.opCode = opCode;

@@ -35,12 +35,7 @@ async function debugOpcode() {
 
 async function runCode(code: Buffer, callData: Buffer, callValue: BN) {
   const historyManager = new ExecutionManager(code, callData, callValue);
-  let execInfo = {
-    stack: new Stack(),
-    initialPC: 0,
-    memory: new Memory(),
-    storageDump: {},
-  };
+  let execInfo = historyManager.currentStep;
 
   while (true) {
     await outputExecInfo(
@@ -52,17 +47,29 @@ async function runCode(code: Buffer, callData: Buffer, callValue: BN) {
       10
     );
 
+    const choices = [];
+    if (execInfo.initialPC < code.length) {
+      choices.push("Step Forwards");
+    }
+    if (execInfo.initialPC > 0) {
+      choices.push("Step Backwards");
+    }
+    choices.push("Quit");
     const response = (await prompt({
       type: "autocomplete",
-      name: "direction",
-      choices: ["Forward", "Backward"],
-      message: "What direction",
-    })) as { direction: "Forward" | "Backward" };
-
-    if (response.direction === "Backward") {
-      execInfo = await historyManager.stepBackwards();
-    } else {
-      execInfo = await historyManager.stepForwards();
+      name: "action",
+      choices,
+      message: "What do you want to do?",
+    })) as { action: "Step Forwards" | "Step Backwards" | "Quit" };
+    switch (response.action) {
+      case "Step Forwards":
+        execInfo = await historyManager.stepForwards();
+        break;
+      case "Step Backwards":
+        execInfo = await historyManager.stepBackwards();
+        break;
+      case "Quit":
+        process.exit(0);
     }
   }
 }
