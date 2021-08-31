@@ -1,3 +1,5 @@
+#!/usr/bin/env -S npx ts-node
+
 import Memory from "@ethereumjs/vm/dist/evm/memory";
 import { BN } from "ethereumjs-util";
 import Stack from "@ethereumjs/vm/dist/evm/stack";
