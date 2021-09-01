@@ -73,6 +73,7 @@ async function debugBytecode() {
     abi.functions[functionToCall],
     inputValues
   );
+
   const { callValue } = (await prompt({
     type: "numeral",
     name: "callValue",
@@ -83,10 +84,20 @@ async function debugBytecode() {
     await fs.promises.readFile(commandArguments.b, "utf8"),
     "hex"
   );
-  await runCode(code, Buffer.from(callData.slice(2), "hex"), new BN(callValue));
+  await runCode(
+    code,
+    Buffer.from(callData.slice(2), "hex"),
+    new BN(callValue),
+    abi.functions[functionToCall]
+  );
 }
 
-async function runCode(code: Buffer, callData: Buffer, callValue: BN) {
+async function runCode(
+  code: Buffer,
+  callData: Buffer,
+  callValue: BN,
+  functionToCall: utils.FunctionFragment
+) {
   const executionManager = new ExecutionManager(code, callData, callValue);
   let execInfo = executionManager.currentStep;
 
@@ -97,6 +108,7 @@ async function runCode(code: Buffer, callData: Buffer, callValue: BN) {
       callData,
       callValue,
       executionManager.opCodeList,
+      functionToCall,
       10
     );
 
@@ -135,6 +147,7 @@ async function outputExecInfo(
   callData: Buffer,
   callValue: BN,
   opCodeList: OpcodeList,
+  functionToCall: utils.FunctionFragment,
   height: number
 ) {
   const runStateOutput = await generateRunStateOutput(execInfo, height);
@@ -155,8 +168,23 @@ async function outputExecInfo(
   );
 
   console.clear();
+  console.log(chalk.bold("FUNCTION"));
+  // NOTE: format('sighhash') actually returns the function
+  console.log(
+    `${functionToCall.format("sighash")}: 0x${chalk.bgRed(
+      utils.Interface.getSighash(functionToCall).slice(2)
+    )}`
+  );
   console.log(chalk.bold("CALL DATA"));
-  console.log(`0x${callData.toString("hex")}`);
+  let callDataOutput = "0x";
+  for (let i = 0; i < callData.length; i++) {
+    if (i < 4) {
+      callDataOutput = callDataOutput + chalk.bgRed(toPrettyByte(callData[i]));
+    } else {
+      callDataOutput = callDataOutput + toPrettyByte(callData[i]);
+    }
+  }
+  console.log(callDataOutput);
   console.log(chalk.bold("CALL VALUE"));
   console.log(`0x${callValue.toString("hex")}`);
 
