@@ -15,11 +15,11 @@ import {
   incrementCounter,
   formatBuffer,
 } from "../src/utils";
-import { prompt } from "enquirer";
+// import { prompt } from "enquirer";
 import fs from "fs";
 import { utils } from "ethers";
 import jsonfile from "jsonfile";
-
+import prompts from "prompts";
 debugBytecode();
 
 async function debugBytecode() {
@@ -43,14 +43,17 @@ async function debugBytecode() {
 
   const abiFile = await jsonfile.readFile(commandArguments.a);
   const abi = new utils.Interface(abiFile);
-  const choices = Object.keys(abi.functions);
+  const choices = Object.keys(abi.functions).map((k) => ({
+    value: k,
+    title: k,
+  }));
 
-  const { functionToCall } = (await prompt({
+  const { functionToCall } = await prompts({
     type: "select",
     name: "functionToCall",
     choices,
     message: "Which function do you want to call?'",
-  })) as { functionToCall: string };
+  });
 
   let inputValues = [];
   for (const input of abi.functions[functionToCall].inputs) {
@@ -58,11 +61,12 @@ async function debugBytecode() {
       throw new Error(`Sorry, currently we don't support complex parameters`);
     }
 
-    const { inputValue } = (await prompt({
-      type: "numeral",
+    const { inputValue } = await prompts({
+      type: "number",
       name: "inputValue",
+
       message: `Enter a value for argument ${input.name}`,
-    })) as { inputValue: number };
+    });
     inputValues.push(inputValue);
   }
   const callData = abi.encodeFunctionData(
@@ -70,11 +74,11 @@ async function debugBytecode() {
     inputValues
   );
 
-  const { callValue } = (await prompt({
-    type: "numeral",
+  const { callValue } = await prompts({
+    type: "number",
     name: "callValue",
     message: `Enter the amount of wei to be sent to the function.`,
-  })) as { callValue: number };
+  });
 
   const code = Buffer.from(
     await fs.promises.readFile(commandArguments.b, "utf8"),
@@ -111,28 +115,27 @@ async function runCode(
 
     const choices = [];
     if (executionManager.canStepForward) {
-      choices.push("Step Forwards");
+      choices.push({ title: "Step Forwards", value: "stepForward" });
     }
     if (executionManager.canStepBackward) {
-      choices.push("Step Backwards");
+      choices.push({ title: "Step Backwards", value: "stepBackward" });
     }
-    choices.push("Quit");
+    choices.push({ title: "Quit", value: "quit" });
 
-    const response = (await prompt({
+    const response = await prompts({
       type: "select",
       name: "action",
       choices,
       message: "What do you want to do?",
-    })) as { action: "Step Forwards" | "Step Backwards" | "Quit" };
-
+    });
     switch (response.action) {
-      case "Step Forwards":
+      case "stepForward":
         execInfo = await executionManager.stepForwards();
         break;
-      case "Step Backwards":
+      case "stepBackward":
         execInfo = await executionManager.stepBackwards();
         break;
-      case "Quit":
+      case "quit":
         process.exit(0);
     }
   }
