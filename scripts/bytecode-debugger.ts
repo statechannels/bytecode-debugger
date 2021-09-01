@@ -15,7 +15,7 @@ import {
   formatBuffer,
   addHexPrefix,
 } from "../src/utils";
-// import { prompt } from "enquirer";
+
 import fs from "fs";
 import { utils, BigNumber } from "ethers";
 import jsonfile from "jsonfile";
