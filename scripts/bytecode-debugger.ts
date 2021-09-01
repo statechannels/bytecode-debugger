@@ -1,8 +1,6 @@
 #!/usr/bin/env -S npx ts-node
 
-import Memory from "@ethereumjs/vm/dist/evm/memory";
 import { BN } from "ethereumjs-util";
-import Stack from "@ethereumjs/vm/dist/evm/stack";
 import { OpcodeList } from "@ethereumjs/vm/dist/evm/opcodes";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
@@ -10,9 +8,13 @@ import { hideBin } from "yargs/helpers";
 import Table from "cli-table";
 import chalk, { Chalk } from "chalk";
 import _ from "lodash";
-import { StorageDump } from "@ethereumjs/vm/dist/state/interface";
 import { ExecutionManager, ExecutionInfo } from "../src/execution-manager";
-import { toPrettyHex, toPrettyByte, incrementCounter } from "../src/utils";
+import {
+  toPrettyHex,
+  toPrettyByte,
+  incrementCounter,
+  formatBuffer,
+} from "../src/utils";
 import { prompt } from "enquirer";
 import fs from "fs";
 import { utils } from "ethers";
@@ -99,6 +101,7 @@ async function runCode(
   functionToCall: utils.FunctionFragment
 ) {
   const executionManager = new ExecutionManager(code, callData, callValue);
+
   let execInfo = executionManager.currentStep;
 
   while (true) {
@@ -150,16 +153,17 @@ async function outputExecInfo(
   functionToCall: utils.FunctionFragment,
   height: number
 ) {
-  const runStateOutput = await generateRunStateOutput(execInfo, height);
-
+  const storageTable = await generateStorageTable(execInfo, height);
+  const stackTable = await generateStackTable(execInfo, height);
+  const memoryTable = generateMemoryTable(execInfo, height);
   const instructionTable = await generateInstructionTable(
     execInfo.initialPC,
     code,
     height,
     opCodeList
   );
-  const masterTable = new Table();
-  masterTable.push([instructionTable.toString(), runStateOutput.toString()]);
+  const masterTable = new Table({ head: ["", "STACK", "MEMORY", "STORAGE"] });
+  masterTable.push([instructionTable, stackTable, memoryTable, storageTable]);
 
   const bytecodeOutput = generateBytecodeOutput(
     code,
@@ -199,51 +203,21 @@ async function outputExecInfo(
     console.log(chalk.bgRed("REVERT command reached. Execution Complete"));
   }
 }
+function generateMemoryTable(execInfo: ExecutionInfo, height: number) {
+  const memoryTable = new Table({
+    head: ["ADDRESS", "VALUE"],
+    colWidths: [10, 50],
+  });
 
-async function generateStorageLine(
-  lineCounter: number,
-  storageDump: StorageDump
-): Promise<string[]> {
-  const storageItems = Object.keys(storageDump)
-    .filter((key) => !storageDump[key].includes("deadbeaf"))
-    .map((key) => [key, storageDump[key]]);
-
-  if (lineCounter < storageItems.length) {
-    return storageItems[lineCounter];
-  } else {
-    return ["", ""];
+  let currentIndex = 0;
+  let lineHeight = 0;
+  while (lineHeight < height) {
+    const memoryLine = execInfo.memory.read(currentIndex, 16);
+    memoryTable.push([toPrettyHex(currentIndex), formatBuffer(memoryLine)]);
+    currentIndex += 16;
+    lineHeight++;
   }
-}
-
-function generateStackline(lineCounter: number, stack: Stack) {
-  const line: string[] = [];
-  const stackItems = _.clone(stack._store)
-    .map((bn) => `0x${bn.toString("hex")}`)
-    .reverse();
-  if (lineCounter < stackItems.length) {
-    line.push(stackItems[lineCounter]);
-  } else {
-    line.push("");
-  }
-  return line;
-}
-
-function generateMemoryLine(lineCounter: number, memory: Memory) {
-  const line: string[] = [];
-
-  // TODO: Just calculate the iterator and copy the value
-  const memoryItems = _.clone(memory._store).reverse();
-
-  if (lineCounter < memoryItems.length) {
-    line.push(
-      memoryItems[lineCounter] === 0
-        ? ""
-        : toPrettyHex(memoryItems[lineCounter])
-    );
-  } else {
-    line.push("");
-  }
-  return line;
+  return memoryTable.toString();
 }
 
 async function generateInstructionTable(
@@ -345,21 +319,45 @@ function generateBytecodeOutput(
   return `${chalk.bold("BYTECODE")}\n${byteCodeOutput}`;
 }
 
-async function generateRunStateOutput(
+async function generateStackTable(
   info: ExecutionInfo,
   height: Number
 ): Promise<string> {
-  const runStateTable = new Table({
-    colWidths: [20, 20, 20, 20],
-    head: ["STACK", "MEMORY", "STORAGE KEY", "STORAGE VALUE"],
+  const stackTable = new Table({
+    colWidths: [10, 20],
+    head: ["POS", "VALUE"],
   });
-
+  const stackItems = _.clone(info.stack._store)
+    .map((bn) => `0x${bn.toString("hex")}`)
+    .reverse();
   for (let i = 0; i < height; i++) {
-    runStateTable.push([
-      ...generateStackline(i, info.stack),
-      ...generateMemoryLine(i, info.memory),
-      ...(await generateStorageLine(i, info.storageDump)),
-    ]);
+    if (i < stackItems.length) {
+      stackTable.push([i.toString(), stackItems[i]]);
+    } else {
+      stackTable.push(["", ""]);
+    }
   }
-  return runStateTable.toString();
+  return stackTable.toString();
+}
+
+async function generateStorageTable(
+  info: ExecutionInfo,
+  height: Number
+): Promise<string> {
+  const storageTable = new Table({
+    colWidths: [10, 20],
+    head: ["KEY", "VALUE"],
+  });
+  const { storageDump } = info;
+  const storageItems = Object.keys(storageDump)
+    .filter((key) => !storageDump[key].includes("deadbeaf"))
+    .map((key) => [key, storageDump[key]]);
+  for (let i = 0; i < height; i++) {
+    if (i < storageItems.length) {
+      storageTable.push(storageItems[i]);
+    } else {
+      storageTable.push(["", ""]);
+    }
+  }
+  return storageTable.toString();
 }

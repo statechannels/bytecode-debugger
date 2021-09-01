@@ -15,6 +15,7 @@ import { BN, Address } from "ethereumjs-util";
 import level from "level";
 import { SecureTrie as Trie } from "merkle-patricia-tree";
 import { utils } from "ethers";
+import chalk from "chalk";
 
 export function getValidJumpDests(
   code: Buffer,
@@ -43,6 +44,17 @@ export function getValidJumpDests(
 
 export function toPrettyByte(thing: number): string {
   return utils.hexZeroPad(toPrettyHex(thing), 1).slice(2);
+}
+export function formatBuffer(buffer: Buffer): string {
+  let pretty = "";
+  for (let i = 0; i < buffer.length; i++) {
+    const valueToPrint =
+      buffer[i] !== 0
+        ? chalk.bold(toPrettyByte(buffer[i]))
+        : toPrettyByte(buffer[i]);
+    pretty = pretty + valueToPrint;
+  }
+  return pretty;
 }
 
 export function toPrettyHex(thing: number): string {
