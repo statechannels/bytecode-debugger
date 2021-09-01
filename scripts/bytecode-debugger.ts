@@ -113,10 +113,10 @@ async function runCode(
     );
 
     const choices = [];
-    if (execInfo.initialPC < code.length) {
+    if (executionManager.canStepForward) {
       choices.push("Step Forwards");
     }
-    if (execInfo.initialPC > 0) {
+    if (executionManager.canStepBackward) {
       choices.push("Step Backwards");
     }
     choices.push("Quit");
@@ -171,7 +171,7 @@ async function outputExecInfo(
   console.log(chalk.bold("FUNCTION"));
   // NOTE: format('sighhash') actually returns the function
   console.log(
-    `${functionToCall.format("sighash")}: 0x${chalk.bgRed(
+    `${functionToCall.format("sighash")}: 0x${chalk.bgGray(
       utils.Interface.getSighash(functionToCall).slice(2)
     )}`
   );
@@ -179,7 +179,7 @@ async function outputExecInfo(
   let callDataOutput = "0x";
   for (let i = 0; i < callData.length; i++) {
     if (i < 4) {
-      callDataOutput = callDataOutput + chalk.bgRed(toPrettyByte(callData[i]));
+      callDataOutput = callDataOutput + chalk.bgGray(toPrettyByte(callData[i]));
     } else {
       callDataOutput = callDataOutput + toPrettyByte(callData[i]);
     }
@@ -191,6 +191,13 @@ async function outputExecInfo(
   console.log(bytecodeOutput);
   console.log(`${chalk.bold("Total Gas Used:")} ${execInfo.gasUsed}`);
   console.log(masterTable.toString());
+  const opCodeInfo = opCodeList.get(code[execInfo.initialPC]);
+  if (opCodeInfo && opCodeInfo.name === "STOP") {
+    console.log(chalk.bgGreen("STOP command reached. Execution Complete"));
+  }
+  if (opCodeInfo && opCodeInfo.name === "REVERT") {
+    console.log(chalk.bgRed("REVERT command reached. Execution Complete"));
+  }
 }
 
 async function generateStorageLine(

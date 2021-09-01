@@ -68,6 +68,23 @@ export class ExecutionManager {
     return this.history[this.currentIndex];
   }
 
+  get canStepBackward(): boolean {
+    return this.currentIndex > 0;
+  }
+
+  get canStepForward(): boolean {
+    const opCode = this.runState.code[this.currentStep.initialPC];
+    const opCodeInfo = this.opCodeList.get(opCode);
+    if (
+      opCodeInfo &&
+      (opCodeInfo.name === "STOP" || opCodeInfo.name === "REVERT")
+    ) {
+      return false;
+    }
+
+    return this.currentIndex < this.runState.code.length;
+  }
+
   private async executeStep(): Promise<ExecutionInfo> {
     const opCode = this.runState.code[this.runState.programCounter];
     this.runState.opCode = opCode;
@@ -83,7 +100,7 @@ export class ExecutionManager {
     );
 
     this.runState.programCounter++;
-
+    const { memory, stack, stateManager } = this.runState;
     try {
       // Execute opcode handler
       const opHandler = handlers.get(this.runState.opCode)!;
@@ -96,18 +113,10 @@ export class ExecutionManager {
         opHandler.apply(null, [this.runState, this.common]);
       }
     } catch (error) {
-      // If we reach the STOP instruction the evm throws an STOP error
-      // This just means the execution is done
-      // TODO: Not casting this causes an error. Probably some type mismatch.
-      if ((error as any).error === "stop") {
-        console.log("Execution Complete");
-        process.exit(0);
-      } else {
-        console.error(error);
-        process.exit(1);
-      }
+      console.error(error);
+      process.exit(1);
     }
-    const { memory, stack, stateManager } = this.runState;
+
     return {
       stack,
       memory,
