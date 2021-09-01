@@ -1,4 +1,8 @@
-# Quick Start
+# EVM Bytecode Debugger
+
+This utility allows you to take bytecode and abi output from `solc` and step through the byte code.
+
+## Quick Start
 
 ```shell
 # Download the sample contract from github
