@@ -279,11 +279,13 @@ function generateBytecodeOutput(
   currentCounter: number,
   opCodeList: OpcodeList
 ): string {
-  let byteCodeOutput = "0x";
+  let byteCodeOutput = "";
+  const lineWidth = 100;
+  const startIndex = Math.max(0, currentCounter - lineWidth * 1);
+  const finishIndex = startIndex + lineWidth * 10;
+  let printCounter = startIndex;
 
-  let printCounter = 0;
-
-  while (printCounter < code.length) {
+  while (printCounter < finishIndex && printCounter < code.length) {
     if (currentCounter === printCounter) {
       const opCode = opCodeList.get(code[printCounter])!;
       let numToPush = opCode.name === "PUSH" ? opCode.code - 0x5f : 0;
@@ -293,12 +295,17 @@ function generateBytecodeOutput(
       while (numToPush !== 0) {
         numToPush--;
         printCounter++;
+
         byteCodeOutput += chalk.bgMagenta(toPrettyByte(code[printCounter]));
       }
     } else {
       byteCodeOutput += toPrettyByte(code[printCounter]);
     }
+
     printCounter++;
+  }
+  if (finishIndex < code.length) {
+    byteCodeOutput = byteCodeOutput + "...";
   }
   return `${chalk.bold("BYTECODE")}\n${byteCodeOutput}`;
 }
