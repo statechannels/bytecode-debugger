@@ -86,7 +86,11 @@ async function getInputValue(
   argumentName: string
 ): Promise<any> {
   if (input.baseType === "tuple") {
-    throw new Error("Currently tuples are not suppported!");
+    const tuple = [];
+    for (const component of input.components) {
+      tuple.push(await getInputValue(component, component.name));
+    }
+    return tuple;
   }
   if (input.baseType === "array") {
     let { keepGoing } = await prompts({
