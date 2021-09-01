@@ -10,7 +10,8 @@ import {
 } from "@ethereumjs/vm/dist/evm/opcodes";
 import Stack from "@ethereumjs/vm/dist/evm/stack";
 import { StorageDump } from "@ethereumjs/vm/dist/state/interface";
-import { BN, Address } from "ethereumjs-util";
+import { Address, BN } from "ethereumjs-util";
+import { BigNumber } from "ethers";
 import _ from "lodash";
 import { evmSetup } from "./utils";
 
@@ -32,7 +33,7 @@ export class ExecutionManager {
 
   public opCodeList: OpcodeList;
 
-  constructor(code: Buffer, callData: Buffer, callValue: BN) {
+  constructor(code: Buffer, callData: Buffer, callValue: BigNumber) {
     const { runState, common } = evmSetup(callData, callValue, code);
 
     this.runState = runState;

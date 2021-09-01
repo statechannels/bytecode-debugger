@@ -1,6 +1,5 @@
 #!/usr/bin/env -S npx ts-node
 
-import { BN } from "ethereumjs-util";
 import { OpcodeList } from "@ethereumjs/vm/dist/evm/opcodes";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
@@ -17,7 +16,7 @@ import {
 } from "../src/utils";
 // import { prompt } from "enquirer";
 import fs from "fs";
-import { utils } from "ethers";
+import { utils, BigNumber } from "ethers";
 import jsonfile from "jsonfile";
 import prompts from "prompts";
 debugBytecode();
@@ -57,17 +56,7 @@ async function debugBytecode() {
 
   let inputValues = [];
   for (const input of abi.functions[functionToCall].inputs) {
-    if (input.baseType === "array" || input.baseType === "tuple") {
-      throw new Error(`Sorry, currently we don't support complex parameters`);
-    }
-
-    const { inputValue } = await prompts({
-      type: "number",
-      name: "inputValue",
-
-      message: `Enter a value for argument ${input.name}`,
-    });
-    inputValues.push(inputValue);
+    inputValues.push(await getInputValue(input, input.name));
   }
   const callData = abi.encodeFunctionData(
     abi.functions[functionToCall],
@@ -87,15 +76,100 @@ async function debugBytecode() {
   await runCode(
     code,
     Buffer.from(callData.slice(2), "hex"),
-    new BN(callValue),
+    BigNumber.from(callValue),
     abi.functions[functionToCall]
   );
 }
 
+async function getInputValue(
+  input: utils.ParamType,
+  argumentName: string
+): Promise<any> {
+  if (input.baseType === "tuple") {
+    throw new Error("Currently tuples are not suppported!");
+  }
+  if (input.baseType === "array") {
+    let { keepGoing } = await prompts({
+      type: "confirm",
+      name: "keepGoing",
+      message: `Add an item to the argument array for ${argumentName}`,
+    });
+    const arrayValues = [];
+    while (keepGoing) {
+      arrayValues.push(await getInputValue(input.arrayChildren, "array"));
+      keepGoing = (
+        await prompts({
+          type: "confirm",
+          name: "keepGoing",
+          message: `Add an item to the argument array for ${argumentName}`,
+        })
+      ).keepGoing;
+    }
+    return arrayValues;
+  }
+
+  if (input.baseType === "address") {
+    const { inputValue } = await prompts({
+      type: "text",
+      name: "inputValue",
+      validate: (value) =>
+        utils.isAddress(value) ? true : "Please enter a valid address",
+      message: `Enter an address for argument ${argumentName}`,
+    });
+    return utils.getAddress(`0x${inputValue}`);
+  }
+  if (input.baseType === "bool") {
+    return (
+      await prompts({
+        type: "select",
+        name: "inputValue",
+        choices: [
+          { title: "True", value: true },
+          { title: "False", value: false },
+        ],
+        message: `Enter a boolean for argument ${argumentName}`,
+      })
+    ).inputValue;
+  }
+  if (input.baseType === "string") {
+    return (
+      await prompts({
+        type: "text",
+        name: "inputValue",
+
+        message: `Enter a string for argument ${argumentName}`,
+      })
+    ).inputValue;
+  }
+  if (input.baseType.includes("bytes")) {
+    const { inputValue } = await prompts({
+      type: "text",
+      name: "inputValue",
+      validate: (value) =>
+        utils.isHexString(`0x${value}`)
+          ? true
+          : "Please enter a valid hex string",
+      message: `Enter a hex string for argument ${argumentName}`,
+    });
+
+    return BigNumber.from(`0x${inputValue}`);
+  }
+
+  if (input.baseType.includes("int")) {
+    return (
+      await prompts({
+        type: "number",
+        name: "inputValue",
+        min: input.baseType.includes("uint") ? 0 : -Infinity,
+        message: `Enter a number for argument ${argumentName}`,
+      })
+    ).inputValue;
+  }
+}
 async function runCode(
   code: Buffer,
   callData: Buffer,
-  callValue: BN,
+  callValue: BigNumber,
   functionToCall: utils.FunctionFragment
 ) {
   const executionManager = new ExecutionManager(code, callData, callValue);
@@ -145,7 +219,7 @@ async function outputExecInfo(
   execInfo: ExecutionInfo,
   code: Buffer,
   callData: Buffer,
-  callValue: BN,
+  callValue: BigNumber,
   opCodeList: OpcodeList,
   functionToCall: utils.FunctionFragment,
   height: number
@@ -187,7 +261,7 @@ async function outputExecInfo(
   }
   console.log(callDataOutput);
   console.log(chalk.bold("CALL VALUE"));
-  console.log(`0x${callValue.toString("hex")}`);
+  console.log(`0x${callValue.toHexString()}`);
 
   console.log(bytecodeOutput);
   console.log(`${chalk.bold("Total Gas Used:")} ${execInfo.gasUsed}`);

@@ -14,7 +14,7 @@ import { DefaultStateManager } from "@ethereumjs/vm/dist/state";
 import { BN, Address } from "ethereumjs-util";
 import level from "level";
 import { SecureTrie as Trie } from "merkle-patricia-tree";
-import { utils } from "ethers";
+import { BigNumber, utils } from "ethers";
 import chalk from "chalk";
 
 export function getValidJumpDests(
@@ -71,7 +71,7 @@ export function getOpcodeInfo(code: number, opCodeList: OpcodeList): Opcode {
 
 export function evmSetup(
   callData: Buffer,
-  callValue: BN,
+  callValue: BigNumber,
   code: Buffer
 ): { runState: RunState; opCodeList: OpcodeList; common: Common } {
   const common = new Common({ chain: Chain.Mainnet });
@@ -85,7 +85,7 @@ export function evmSetup(
     address: Address.zero(),
     caller: Address.zero(),
     callData,
-    callValue,
+    callValue: new BN(callValue.toString()),
     code,
     isStatic: false,
     depth: 0,
