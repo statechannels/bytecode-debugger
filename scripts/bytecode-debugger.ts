@@ -3,7 +3,7 @@
 import Memory from "@ethereumjs/vm/dist/evm/memory";
 import { BN } from "ethereumjs-util";
 import Stack from "@ethereumjs/vm/dist/evm/stack";
-import { Opcode, OpcodeList } from "@ethereumjs/vm/dist/evm/opcodes";
+import { OpcodeList } from "@ethereumjs/vm/dist/evm/opcodes";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
@@ -355,12 +355,4 @@ async function generateRunStateOutput(
     ]);
   }
   return runStateTable.toString();
-}
-
-function getOpcodeInfo(code: number, opCodeList: OpcodeList): Opcode {
-  const opcodeInfo = opCodeList.get(code);
-  if (!opcodeInfo) {
-    throw new Error(`Invalid opcode ${toPrettyHex(code)}`);
-  }
-  return opcodeInfo;
 }
