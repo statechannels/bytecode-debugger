@@ -1,7 +1,4 @@
-import { Block } from "@ethereumjs/block";
-import Common, { Chain } from "@ethereumjs/common";
-import EEI from "@ethereumjs/vm/dist/evm/eei";
-import EVM from "@ethereumjs/vm/dist/evm/evm";
+import Common from "@ethereumjs/common";
 import { RunState } from "@ethereumjs/vm/dist/evm/interpreter";
 import Memory from "@ethereumjs/vm/dist/evm/memory";
 import {
@@ -12,12 +9,9 @@ import {
   getOpcodesForHF,
 } from "@ethereumjs/vm/dist/evm/opcodes";
 import Stack from "@ethereumjs/vm/dist/evm/stack";
-import { DefaultStateManager } from "@ethereumjs/vm/dist/state";
 import { StorageDump } from "@ethereumjs/vm/dist/state/interface";
-import level from "level";
 import { BN, Address } from "ethereumjs-util";
 import _ from "lodash";
-import { SecureTrie as Trie } from "merkle-patricia-tree";
 import { evmSetup } from "./utils";
 
 export type ExecutionInfo = {
