@@ -13,6 +13,7 @@ import {
   toPrettyByte,
   incrementCounter,
   formatBuffer,
+  addHexPrefix,
 } from "../src/utils";
 // import { prompt } from "enquirer";
 import fs from "fs";
@@ -117,10 +118,12 @@ async function getInputValue(
       type: "text",
       name: "inputValue",
       validate: (value) =>
-        utils.isAddress(value) ? true : "Please enter a valid address",
+        utils.isAddress(addHexPrefix(value))
+          ? true
+          : "Please enter a valid address",
       message: `Enter an address for argument ${argumentName}`,
     });
-    return utils.getAddress(`0x${inputValue}`);
+    return utils.getAddress(addHexPrefix(inputValue));
   }
   if (input.baseType === "bool") {
     return (
@@ -150,13 +153,13 @@ async function getInputValue(
       type: "text",
       name: "inputValue",
       validate: (value) =>
-        utils.isHexString(`0x${value}`)
+        utils.isHexString(addHexPrefix(value))
           ? true
           : "Please enter a valid hex string",
       message: `Enter a hex string for argument ${argumentName}`,
     });
 
-    return BigNumber.from(`0x${inputValue}`);
+    return BigNumber.from(addHexPrefix(inputValue));
   }
 
   if (input.baseType.includes("int")) {

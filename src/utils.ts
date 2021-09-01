@@ -127,6 +127,10 @@ export function evmSetup(
   return { opCodeList, runState, common };
 }
 
+export function addHexPrefix(hexString: string) {
+  return hexString.startsWith("0x") ? hexString : `0x${hexString}`;
+}
+
 export function incrementCounter(
   currentCounter: number,
   code: Buffer,
