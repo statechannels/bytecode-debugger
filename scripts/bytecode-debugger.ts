@@ -259,7 +259,7 @@ async function outputExecInfo(
   console.log(chalk.bold("FUNCTION"));
   // NOTE: format('sighhash') actually returns the function
   console.log(
-    `${functionToCall.format("sighash")}: 0x${chalk.bgGray(
+    `${functionToCall.format("sighash")}: 0x${chalk.inverse(
       utils.Interface.getSighash(functionToCall).slice(2)
     )}`
   );
@@ -267,14 +267,15 @@ async function outputExecInfo(
   let callDataOutput = "0x";
   for (let i = 0; i < callData.length; i++) {
     if (i < 4) {
-      callDataOutput = callDataOutput + chalk.bgGray(toPrettyByte(callData[i]));
+      callDataOutput =
+        callDataOutput + chalk.inverse(toPrettyByte(callData[i]));
     } else {
       callDataOutput = callDataOutput + toPrettyByte(callData[i]);
     }
   }
   console.log(callDataOutput);
   console.log(chalk.bold("CALL VALUE"));
-  console.log(`0x${callValue.toHexString()}`);
+  console.log(callValue.toHexString());
 
   console.log(bytecodeOutput);
   console.log(`${chalk.bold("Total Gas Used:")} ${execInfo.gasUsed}`);
@@ -322,9 +323,11 @@ async function generateInstructionTable(
   for (let i = 0; i < numberOfLines && printCounter < code.length; i++) {
     const opCodeInfo = opCodeList.get(code[printCounter]);
     const currentColor =
-      printCounter === currentCounter ? chalk.bgBlue : chalk.white;
+      printCounter === currentCounter ? chalk.whiteBright.bgBlue : chalk.reset;
     const valueColor =
-      printCounter === currentCounter ? chalk.bgMagenta : chalk.white;
+      printCounter === currentCounter
+        ? chalk.whiteBright.bgMagenta
+        : chalk.reset;
 
     opCodeExecTable.push([
       currentColor(toPrettyHex(printCounter)),
@@ -383,13 +386,17 @@ function generateBytecodeOutput(
       const opCode = opCodeList.get(code[printCounter])!;
       let numToPush = opCode.name === "PUSH" ? opCode.code - 0x5f : 0;
 
-      byteCodeOutput += chalk.bgBlue(toPrettyByte(code[printCounter]));
+      byteCodeOutput += chalk.whiteBright.bgBlue(
+        toPrettyByte(code[printCounter])
+      );
 
       while (numToPush !== 0) {
         numToPush--;
         printCounter++;
 
-        byteCodeOutput += chalk.bgMagenta(toPrettyByte(code[printCounter]));
+        byteCodeOutput += chalk.whiteBright.bgMagenta(
+          toPrettyByte(code[printCounter])
+        );
       }
     } else {
       byteCodeOutput += toPrettyByte(code[printCounter]);
