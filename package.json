@@ -1,6 +1,6 @@
 {
   "name": "bytecode-debugger",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "main": "scripts/bytecode-debugger.ts",
   "bin": {
     "bcdebug": "./scripts/bytecode-debugger.ts",
