@@ -4,7 +4,7 @@ import { OpcodeList } from "@ethereumjs/vm/dist/evm/opcodes";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
-import Table from "cli-table";
+import Table from "cli-table3";
 import chalk, { Chalk } from "chalk";
 import _ from "lodash";
 import { ExecutionManager, ExecutionInfo } from "../src/execution-manager";
@@ -15,7 +15,7 @@ import {
   formatBuffer,
   addHexPrefix,
 } from "../src/utils";
-
+import ui from "yargs/";
 import fs from "fs";
 import { utils, BigNumber } from "ethers";
 import jsonfile from "jsonfile";
