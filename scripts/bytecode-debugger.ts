@@ -240,7 +240,13 @@ async function outputExecInfo(
     height,
     opCodeList
   );
-  const masterTable = new Table({ head: ["", "STACK", "MEMORY", "STORAGE"] });
+  const masterTable = new Table({
+    head: ["", "STACK", "MEMORY", "STORAGE"],
+    style: {
+      "padding-left": 0,
+      "padding-right": 0,
+    },
+  });
   masterTable.push([instructionTable, stackTable, memoryTable, storageTable]);
 
   const bytecodeOutput = generateBytecodeOutput(
@@ -284,7 +290,7 @@ async function outputExecInfo(
 function generateMemoryTable(execInfo: ExecutionInfo, height: number) {
   const memoryTable = new Table({
     head: ["ADDRESS", "VALUE"],
-    colWidths: [10, 50],
+    colWidths: [10, 36],
   });
 
   let currentIndex = 0;
@@ -305,8 +311,8 @@ async function generateInstructionTable(
   opCodeList: OpcodeList
 ): Promise<string> {
   const opCodeExecTable = new Table({
-    head: ["PC", "OP CODE", "INSTRUCTION", "GAS COST"],
-    colWidths: [10, 10, 20, 10],
+    head: ["PC", "CODE", "INSTRUCTION", "GAS"],
+    colWidths: [8, 8, 20, 8],
   });
 
   const numberOfLines = Math.min(height, code.length - currentCounter);
@@ -357,7 +363,7 @@ function getInstructionName(
       currentCounter + 1,
       incrementCounter(currentCounter, code, opCodeList)
     );
-    instruction += ` ${valueColor("0x" + values.toString("hex"))}`;
+    instruction += ` ${valueColor(values.toString("hex"))}`;
   }
   return instruction;
 }
@@ -402,7 +408,7 @@ async function generateStackTable(
   height: Number
 ): Promise<string> {
   const stackTable = new Table({
-    colWidths: [10, 20],
+    colWidths: [8, 20],
     head: ["POS", "VALUE"],
   });
   const stackItems = _.clone(info.stack._store)
