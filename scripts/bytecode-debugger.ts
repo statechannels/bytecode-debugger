@@ -325,7 +325,9 @@ async function generateInstructionTable(
     const currentColor =
       printCounter === currentCounter ? chalk.inverse : chalk.reset;
     const valueColor =
-      printCounter === currentCounter ? chalk.bgMagenta : chalk.reset;
+      printCounter === currentCounter
+        ? chalk.whiteBright.bgMagenta
+        : chalk.reset;
 
     opCodeExecTable.push([
       currentColor(toPrettyHex(printCounter)),
@@ -390,7 +392,9 @@ function generateBytecodeOutput(
         numToPush--;
         printCounter++;
 
-        byteCodeOutput += chalk.bgMagenta(toPrettyByte(code[printCounter]));
+        byteCodeOutput += chalk.whiteBright.bgMagenta(
+          toPrettyByte(code[printCounter])
+        );
       }
     } else {
       byteCodeOutput += toPrettyByte(code[printCounter]);
