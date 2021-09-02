@@ -274,7 +274,7 @@ async function outputExecInfo(
   }
   console.log(callDataOutput);
   console.log(chalk.bold("CALL VALUE"));
-  console.log(`0x${callValue.toHexString()}`);
+  console.log(callValue.toHexString());
 
   console.log(bytecodeOutput);
   console.log(`${chalk.bold("Total Gas Used:")} ${execInfo.gasUsed}`);
