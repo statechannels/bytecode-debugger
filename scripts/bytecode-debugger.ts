@@ -323,7 +323,7 @@ async function generateInstructionTable(
   for (let i = 0; i < numberOfLines && printCounter < code.length; i++) {
     const opCodeInfo = opCodeList.get(code[printCounter]);
     const currentColor =
-      printCounter === currentCounter ? chalk.inverse : chalk.reset;
+      printCounter === currentCounter ? chalk.whiteBright.bgBlue : chalk.reset;
     const valueColor =
       printCounter === currentCounter
         ? chalk.whiteBright.bgMagenta
@@ -386,7 +386,9 @@ function generateBytecodeOutput(
       const opCode = opCodeList.get(code[printCounter])!;
       let numToPush = opCode.name === "PUSH" ? opCode.code - 0x5f : 0;
 
-      byteCodeOutput += chalk.inverse(toPrettyByte(code[printCounter]));
+      byteCodeOutput += chalk.whiteBright.bgBlue(
+        toPrettyByte(code[printCounter])
+      );
 
       while (numToPush !== 0) {
         numToPush--;
