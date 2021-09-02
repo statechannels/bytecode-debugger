@@ -259,7 +259,7 @@ async function outputExecInfo(
   console.log(chalk.bold("FUNCTION"));
   // NOTE: format('sighhash') actually returns the function
   console.log(
-    `${functionToCall.format("sighash")}: 0x${chalk.bgGray(
+    `${functionToCall.format("sighash")}: 0x${chalk.inverse(
       utils.Interface.getSighash(functionToCall).slice(2)
     )}`
   );
@@ -267,7 +267,8 @@ async function outputExecInfo(
   let callDataOutput = "0x";
   for (let i = 0; i < callData.length; i++) {
     if (i < 4) {
-      callDataOutput = callDataOutput + chalk.bgGray(toPrettyByte(callData[i]));
+      callDataOutput =
+        callDataOutput + chalk.inverse(toPrettyByte(callData[i]));
     } else {
       callDataOutput = callDataOutput + toPrettyByte(callData[i]);
     }
