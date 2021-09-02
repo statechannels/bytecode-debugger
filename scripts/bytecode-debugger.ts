@@ -179,7 +179,11 @@ async function runCode(
   callValue: BigNumber,
   functionToCall: utils.FunctionFragment
 ) {
-  const executionManager = new ExecutionManager(code, callData, callValue);
+  const executionManager = await ExecutionManager.create(
+    code,
+    callData,
+    callValue
+  );
 
   let execInfo = executionManager.currentStep;
 

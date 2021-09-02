@@ -9,9 +9,13 @@ import {
   getOpcodesForHF,
 } from "@ethereumjs/vm/dist/evm/opcodes";
 import Stack from "@ethereumjs/vm/dist/evm/stack";
-import { StorageDump } from "@ethereumjs/vm/dist/state/interface";
-import { Address, BN } from "ethereumjs-util";
-import { BigNumber } from "ethers";
+import { DefaultStateManager } from "@ethereumjs/vm/dist/state";
+import {
+  EIP2929StateManager,
+  StorageDump,
+} from "@ethereumjs/vm/dist/state/interface";
+import { Account, Address, BN } from "ethereumjs-util";
+import { BigNumber, utils } from "ethers";
 import _ from "lodash";
 import { evmSetup } from "./utils";
 
@@ -33,21 +37,30 @@ export class ExecutionManager {
 
   public opCodeList: OpcodeList;
 
-  constructor(code: Buffer, callData: Buffer, callValue: BigNumber) {
+  public static async create(
+    code: Buffer,
+    callData: Buffer,
+    callValue: BigNumber
+  ): Promise<ExecutionManager> {
     const { runState, common } = evmSetup(callData, callValue, code);
-
-    this.runState = runState;
-    this.initialGas = this.runState.eei.getGasLeft().toNumber();
-    this.opCodeList = getOpcodesForHF(common);
-    this.common = common;
-
     // TODO: This is a hack to ensure the call to getContractStorage doesn't fail
-    // TODO: There is probably a proper way of doing this
+    await (runState.stateManager as DefaultStateManager)._getStorageTrie(
+      Address.zero()
+    );
     runState.stateManager.putContractStorage(
       Address.zero(),
       Buffer.from(_.repeat("deadbeaf", 8), "hex"),
       Buffer.from(_.repeat("deadbeaf", 8), "hex")
     );
+    await runState.stateManager.clearContractStorage(Address.zero());
+
+    return new ExecutionManager(runState, common);
+  }
+  private constructor(runState: RunState, common: Common) {
+    this.runState = runState;
+    this.initialGas = this.runState.eei.getGasLeft().toNumber();
+    this.opCodeList = getOpcodesForHF(common);
+    this.common = common;
 
     // This is the initial state for the PC: 0
     this.history.push({
@@ -111,6 +124,8 @@ export class ExecutionManager {
       console.error(error);
       process.exit(1);
     }
+
+    await (stateManager as DefaultStateManager).dumpStorage(Address.zero());
 
     return {
       stack,
