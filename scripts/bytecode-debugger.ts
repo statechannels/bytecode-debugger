@@ -245,6 +245,7 @@ async function outputExecInfo(
     opCodeList
   );
   const masterTable = new Table({
+    colWidths: [50, 50, 50, 50],
     head: ["", "STACK", "MEMORY", "STORAGE"],
     style: {
       "padding-left": 0,
@@ -281,8 +282,9 @@ async function outputExecInfo(
   console.log(chalk.bold("CALL VALUE"));
   console.log(callValue.toHexString());
 
-  console.log(bytecodeOutput);
   console.log(`${chalk.bold("Total Gas Used:")} ${execInfo.gasUsed}`);
+
+  console.log(bytecodeOutput);
   console.log(masterTable.toString());
   const opCodeInfo = opCodeList.get(code[execInfo.initialPC]);
   if (opCodeInfo && opCodeInfo.name === "STOP") {
@@ -374,18 +376,21 @@ function getInstructionName(
   }
   return instruction;
 }
+
 function generateBytecodeOutput(
   code: Buffer,
   currentCounter: number,
   opCodeList: OpcodeList
 ): string {
   let byteCodeOutput = "";
-  const lineWidth = 100;
-  const startIndex = Math.max(0, currentCounter - lineWidth * 1);
-  const finishIndex = startIndex + lineWidth * 10;
-  let printCounter = startIndex;
+  let charCounter = 0;
 
-  while (printCounter < finishIndex && printCounter < code.length) {
+  const LINE_WIDTH = 100;
+
+  // Find the line we should start on
+  let printCounter = Math.floor(currentCounter / LINE_WIDTH) * LINE_WIDTH;
+
+  while (printCounter < code.length) {
     if (currentCounter === printCounter) {
       const opCode = opCodeList.get(code[printCounter])!;
       let numToPush = opCode.name === "PUSH" ? opCode.code - 0x5f : 0;
@@ -393,6 +398,7 @@ function generateBytecodeOutput(
       byteCodeOutput += chalk.whiteBright.bgBlue(
         toPrettyByte(code[printCounter])
       );
+      charCounter++;
 
       while (numToPush !== 0) {
         numToPush--;
@@ -401,17 +407,30 @@ function generateBytecodeOutput(
         byteCodeOutput += chalk.whiteBright.bgMagenta(
           toPrettyByte(code[printCounter])
         );
+        charCounter++;
+        if (charCounter > 0 && charCounter % LINE_WIDTH === 0) {
+          byteCodeOutput += " \n";
+        }
       }
     } else {
+      charCounter++;
       byteCodeOutput += toPrettyByte(code[printCounter]);
     }
-
+    if (charCounter > 0 && charCounter % LINE_WIDTH === 0) {
+      byteCodeOutput += " \n";
+    }
     printCounter++;
   }
-  if (finishIndex < code.length) {
-    byteCodeOutput = byteCodeOutput + "...";
-  }
-  return `${chalk.bold("BYTECODE")}\n${byteCodeOutput}`;
+
+  const byteCodeTable = new Table({
+    head: ["BYTECODE"],
+    // TODO: This is pretty bad magic string
+    colWidths: [50 * 4 + 3],
+
+    rowHeights: [1, 10],
+  });
+  byteCodeTable.push([byteCodeOutput]);
+  return byteCodeTable.toString();
 }
 
 async function generateStackTable(
