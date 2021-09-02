@@ -9,9 +9,13 @@ import {
   getOpcodesForHF,
 } from "@ethereumjs/vm/dist/evm/opcodes";
 import Stack from "@ethereumjs/vm/dist/evm/stack";
-import { StorageDump } from "@ethereumjs/vm/dist/state/interface";
-import { Address, BN } from "ethereumjs-util";
-import { BigNumber } from "ethers";
+import { DefaultStateManager } from "@ethereumjs/vm/dist/state";
+import {
+  EIP2929StateManager,
+  StorageDump,
+} from "@ethereumjs/vm/dist/state/interface";
+import { Account, Address, BN } from "ethereumjs-util";
+import { BigNumber, utils } from "ethers";
 import _ from "lodash";
 import { evmSetup } from "./utils";
 
@@ -30,24 +34,24 @@ export class ExecutionManager {
   private runState: RunState;
   private common: Common;
   private initialGas: number;
+  private safeToDumpStorage = false;
 
   public opCodeList: OpcodeList;
 
-  constructor(code: Buffer, callData: Buffer, callValue: BigNumber) {
+  public static async create(
+    code: Buffer,
+    callData: Buffer,
+    callValue: BigNumber
+  ): Promise<ExecutionManager> {
     const { runState, common } = evmSetup(callData, callValue, code);
 
+    return new ExecutionManager(runState, common);
+  }
+  private constructor(runState: RunState, common: Common) {
     this.runState = runState;
     this.initialGas = this.runState.eei.getGasLeft().toNumber();
     this.opCodeList = getOpcodesForHF(common);
     this.common = common;
-
-    // TODO: This is a hack to ensure the call to getContractStorage doesn't fail
-    // TODO: There is probably a proper way of doing this
-    runState.stateManager.putContractStorage(
-      Address.zero(),
-      Buffer.from(_.repeat("deadbeaf", 8), "hex"),
-      Buffer.from(_.repeat("deadbeaf", 8), "hex")
-    );
 
     // This is the initial state for the PC: 0
     this.history.push({
@@ -111,11 +115,17 @@ export class ExecutionManager {
       console.error(error);
       process.exit(1);
     }
+    if (opCodeInfo.name === "SSTORE") {
+      this.safeToDumpStorage = true;
+    }
+    const storageDump = this.safeToDumpStorage
+      ? await stateManager.dumpStorage(Address.zero())
+      : {};
 
     return {
       stack,
       memory,
-      storageDump: await stateManager.dumpStorage(Address.zero()),
+      storageDump,
       initialPC: this.runState.programCounter,
       gasUsed: this.initialGas - this.runState.eei.getGasLeft().toNumber(),
     };

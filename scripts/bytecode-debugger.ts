@@ -179,7 +179,11 @@ async function runCode(
   callValue: BigNumber,
   functionToCall: utils.FunctionFragment
 ) {
-  const executionManager = new ExecutionManager(code, callData, callValue);
+  const executionManager = await ExecutionManager.create(
+    code,
+    callData,
+    callValue
+  );
 
   let execInfo = executionManager.currentStep;
 
@@ -440,12 +444,13 @@ async function generateStorageTable(
     head: ["KEY", "VALUE"],
   });
   const { storageDump } = info;
-  const storageItems = Object.keys(storageDump)
-    .filter((key) => !storageDump[key].includes("deadbeaf"))
-    .map((key) => [key, storageDump[key]]);
+  const storageItems: { key: string; value: string }[] = Object.keys(
+    storageDump
+  ).map((key) => ({ key, value: utils.RLP.decode(`0x${storageDump[key]}`) }));
+
   for (let i = 0; i < height; i++) {
     if (i < storageItems.length) {
-      storageTable.push(storageItems[i]);
+      storageTable.push([storageItems[i].key, storageItems[i].value]);
     } else {
       storageTable.push(["", ""]);
     }
