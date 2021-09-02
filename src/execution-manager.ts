@@ -34,6 +34,7 @@ export class ExecutionManager {
   private runState: RunState;
   private common: Common;
   private initialGas: number;
+  private safeToDumpStorage = false;
 
   public opCodeList: OpcodeList;
 
@@ -43,16 +44,6 @@ export class ExecutionManager {
     callValue: BigNumber
   ): Promise<ExecutionManager> {
     const { runState, common } = evmSetup(callData, callValue, code);
-    // TODO: This is a hack to ensure the call to getContractStorage doesn't fail
-    await (runState.stateManager as DefaultStateManager)._getStorageTrie(
-      Address.zero()
-    );
-    runState.stateManager.putContractStorage(
-      Address.zero(),
-      Buffer.from(_.repeat("deadbeaf", 8), "hex"),
-      Buffer.from(_.repeat("deadbeaf", 8), "hex")
-    );
-    await runState.stateManager.clearContractStorage(Address.zero());
 
     return new ExecutionManager(runState, common);
   }
@@ -124,13 +115,17 @@ export class ExecutionManager {
       console.error(error);
       process.exit(1);
     }
-
-    await (stateManager as DefaultStateManager).dumpStorage(Address.zero());
+    if (opCodeInfo.name === "SSTORE") {
+      this.safeToDumpStorage = true;
+    }
+    const storageDump = this.safeToDumpStorage
+      ? await stateManager.dumpStorage(Address.zero())
+      : {};
 
     return {
       stack,
       memory,
-      storageDump: await stateManager.dumpStorage(Address.zero()),
+      storageDump,
       initialPC: this.runState.programCounter,
       gasUsed: this.initialGas - this.runState.eei.getGasLeft().toNumber(),
     };
